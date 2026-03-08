@@ -7,6 +7,7 @@ useHead({
   },
 });
 
+const route = useRoute();
 const links = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/barbers", label: "Barbers", icon: Users },
@@ -19,8 +20,40 @@ const links = [
 
 <template>
   <div class="min-h-screen bg-background">
-    <div class="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-4 sm:px-6 lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-6">
-      <aside class="rounded-[1.75rem] border border-border/70 bg-card/55 p-4 backdrop-blur lg:p-5">
+    <div class="mx-auto flex min-h-screen max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-6">
+      <div class="space-y-3 lg:hidden">
+        <div class="rounded-[1.5rem] border border-border/70 bg-card/60 p-4 backdrop-blur">
+          <div class="flex items-center justify-between gap-4">
+            <AppLogo compact />
+            <Badge variant="outline" class="border-primary/30 text-primary">Admin</Badge>
+          </div>
+          <div class="mt-4">
+            <Button as-child variant="outline" class="w-full rounded-xl">
+              <NuxtLink to="/account">Account</NuxtLink>
+            </Button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <nav class="flex min-w-max gap-2 pb-1">
+            <Button
+              v-for="link in links"
+              :key="link.to"
+              as-child
+              :variant="route.path === link.to ? 'default' : 'outline'"
+              class="h-11 rounded-full px-4"
+              :class="route.path === link.to ? 'bg-primary text-primary-foreground' : 'border-border/70 bg-card/50'"
+            >
+              <NuxtLink :to="link.to" class="flex items-center gap-2">
+                <component :is="link.icon" class="size-4" />
+                {{ link.label }}
+              </NuxtLink>
+            </Button>
+          </nav>
+        </div>
+      </div>
+
+      <aside class="hidden rounded-[1.75rem] border border-border/70 bg-card/55 p-4 backdrop-blur lg:block lg:p-5">
         <div class="flex items-center justify-between gap-4">
           <AppLogo compact />
           <Badge variant="outline" class="border-primary/30 text-primary">Admin</Badge>
@@ -44,7 +77,7 @@ const links = [
         </div>
       </aside>
 
-      <div class="space-y-6">
+      <div class="space-y-5 lg:space-y-6">
         <slot />
       </div>
     </div>

@@ -104,7 +104,32 @@ const removeService = async (id: string) => {
       </Dialog>
     </AppAdminHeader>
 
-    <Card class="border-border/70 bg-card/55">
+    <div class="grid gap-4 md:hidden">
+      <Card v-for="service in services ?? []" :key="service.id" class="border-border/70 bg-card/55">
+        <CardContent class="space-y-4 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-medium text-foreground">{{ service.name }}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{{ service.duration_minutes }} min</p>
+            </div>
+            <Badge :variant="service.active ? 'outline' : 'secondary'">{{ service.active ? "active" : "inactive" }}</Badge>
+          </div>
+          <div class="rounded-xl border border-border/70 bg-background/50 px-4 py-3">
+            <p class="text-sm text-muted-foreground">Price</p>
+            <p class="mt-1 text-lg font-semibold text-foreground">{{ formatCurrency(service.price) }}</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <Button variant="outline" class="rounded-xl" @click="openEdit(service)">Edit</Button>
+            <Button variant="outline" class="rounded-xl text-destructive" @click="removeService(service.id)">
+              <Trash2 class="size-4" />
+              Remove
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
+    <Card class="hidden border-border/70 bg-card/55 md:block">
       <CardContent class="p-0">
         <Table>
           <TableHeader>

@@ -3,6 +3,7 @@ import type { Enums, Tables } from "../types/database";
 type AppointmentStatus = Enums<"appointment_status">;
 type Appointment = Tables<"appointments">;
 type Barber = Tables<"barbers">;
+type BarberService = Tables<"barber_services">;
 type BlockedTime = Tables<"blocked_times">;
 type Service = Tables<"services">;
 type WorkingHour = Tables<"working_hours">;
@@ -70,6 +71,26 @@ type UpdateBlockedTimePayload = {
   reason?: string | null;
 };
 
+export type AdminBarberServiceOption = {
+  service: Service;
+  assigned: boolean;
+  assignment: {
+    id: string;
+    active: boolean;
+    durationOverrideMinutes: number | null;
+    priceOverride: number | null;
+  } | null;
+};
+
+type SaveBarberServicesPayload = {
+  assignments: Array<{
+    serviceId: string;
+    active?: boolean;
+    durationOverrideMinutes?: number | null;
+    priceOverride?: number | null;
+  }>;
+};
+
 export const useAdminApi = () => {
   const getBarbers = () => {
     return useFetch<Barber[]>("/api/admin/barbers", {
@@ -94,6 +115,17 @@ export const useAdminApi = () => {
   const deleteBarber = (id: string) => {
     return $fetch<{ success: true }>(`/api/admin/barbers/${id}`, {
       method: "DELETE",
+    });
+  };
+
+  const getBarberServices = (barberId: string) => {
+    return $fetch<AdminBarberServiceOption[]>(`/api/admin/barbers/${barberId}/services`);
+  };
+
+  const saveBarberServices = (barberId: string, payload: SaveBarberServicesPayload) => {
+    return $fetch<BarberService[]>(`/api/admin/barbers/${barberId}/services`, {
+      method: "PUT",
+      body: payload,
     });
   };
 
@@ -193,6 +225,8 @@ export const useAdminApi = () => {
     createBarber,
     updateBarber,
     deleteBarber,
+    getBarberServices,
+    saveBarberServices,
     getServices,
     createService,
     updateService,

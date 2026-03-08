@@ -7,7 +7,8 @@ export const useAuthSession = () => {
   const authenticated = computed(() => auth.data.value?.authenticated ?? false);
   const role = computed<AuthResponse["role"]>(() => auth.data.value?.role ?? null);
   const user = computed(() => auth.data.value?.user ?? null);
-  const isAdmin = computed(() => role.value === "admin");
+  const hasSession = computed(() => Boolean(authenticated.value && user.value?.id));
+  const isAdmin = computed(() => Boolean(hasSession.value && role.value === "admin"));
 
   const refreshSession = async () => {
     await refreshNuxtData("auth-me");
@@ -19,6 +20,7 @@ export const useAuthSession = () => {
     authenticated,
     role,
     user,
+    hasSession,
     isAdmin,
     refreshSession,
   };

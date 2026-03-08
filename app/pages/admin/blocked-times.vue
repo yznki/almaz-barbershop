@@ -29,14 +29,30 @@ const editForm = reactive({
 
 const barberMap = computed(() => new Map((barbers.value ?? []).map((barber) => [barber.id, barber.name])));
 
-const toIsoString = (value: string) => new Date(value).toISOString();
+const hasValidRange = (startAt: string, endAt: string) => {
+  if (!startAt || !endAt) {
+    toast.error("Choose both start and end");
+    return false;
+  }
+
+  if (new Date(startAt).getTime() >= new Date(endAt).getTime()) {
+    toast.error("End time must be after start time");
+    return false;
+  }
+
+  return true;
+};
 
 const saveCreate = async () => {
+  if (!hasValidRange(createForm.startAt, createForm.endAt)) {
+    return;
+  }
+
   try {
     await adminApi.createBlockedTime({
       barberId: createForm.barberId,
-      startAt: toIsoString(createForm.startAt),
-      endAt: toIsoString(createForm.endAt),
+      startAt: createForm.startAt,
+      endAt: createForm.endAt,
       reason: createForm.reason || null,
     });
     createDialogOpen.value = false;
@@ -60,11 +76,15 @@ const openEdit = (item: NonNullable<typeof blockedTimes.value>[number]) => {
 };
 
 const saveEdit = async () => {
+  if (!hasValidRange(editForm.startAt, editForm.endAt)) {
+    return;
+  }
+
   try {
     await adminApi.updateBlockedTime(editForm.id, {
       barberId: editForm.barberId,
-      startAt: toIsoString(editForm.startAt),
-      endAt: toIsoString(editForm.endAt),
+      startAt: editForm.startAt,
+      endAt: editForm.endAt,
       reason: editForm.reason || null,
     });
     editDialogOpen.value = false;
@@ -136,7 +156,37 @@ const removeBlockedTime = async (id: string) => {
       </Dialog>
     </AppAdminHeader>
 
-    <Card class="border-border/70 bg-card/55">
+    <div class="grid gap-4 md:hidden">
+      <Card v-for="item in blockedTimes ?? []" :key="item.id" class="border-border/70 bg-card/55">
+        <CardContent class="space-y-4 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-medium text-foreground">{{ barberMap.get(item.barber_id) ?? item.barber_id }}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{{ item.reason || "Blocked" }}</p>
+            </div>
+          </div>
+          <div class="grid gap-3 rounded-2xl border border-border/70 bg-background/50 p-4 text-sm">
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-muted-foreground">Start</span>
+              <span class="text-right text-foreground">{{ formatDateTime(item.start_at) }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-muted-foreground">End</span>
+              <span class="text-right text-foreground">{{ formatDateTime(item.end_at) }}</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <Button variant="outline" class="rounded-xl" @click="openEdit(item)">Edit</Button>
+            <Button variant="outline" class="rounded-xl text-destructive" @click="removeBlockedTime(item.id)">
+              <Trash2 class="size-4" />
+              Remove
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+
+    <Card class="hidden border-border/70 bg-card/55 md:block">
       <CardContent class="p-0">
         <Table>
           <TableHeader>

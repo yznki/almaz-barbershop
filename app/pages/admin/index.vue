@@ -63,13 +63,13 @@ const stats = computed(() => [
 
       <Card class="border-border/70 bg-card/55">
         <CardHeader>
-          <CardTitle>Coverage</CardTitle>
-          <CardDescription>Scheduling data currently present in the backend.</CardDescription>
+          <CardTitle>At a glance</CardTitle>
+          <CardDescription>Quick context for today’s shop operations.</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4 text-sm leading-7 text-muted-foreground">
-          <p>Admin-only server authorization is already enforced.</p>
-          <p>Barber-specific role separation is not implemented in the current backend profile checks, so the internal UI stays aligned to admin scope only.</p>
-          <p>Customer account appointment ownership is not modeled yet, which is why that scope remains intentionally limited.</p>
+          <p>Use barbers and services to control what appears in the booking flow.</p>
+          <p>Working hours define the weekly schedule, while blocked times handle exceptions and closures.</p>
+          <p>Appointments can be reviewed here and updated as customers move through the day.</p>
         </CardContent>
       </Card>
     </div>

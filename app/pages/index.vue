@@ -2,6 +2,10 @@
 import { ArrowRight, CalendarClock, Gem, Quote, ShieldCheck, Sparkles, Users } from "lucide-vue-next";
 import { formatCurrency } from "../lib/formatters";
 
+definePageMeta({
+  middleware: "landing",
+});
+
 const publicApi = usePublicApi();
 const { data: services } = await publicApi.getServices();
 const { data: barbers } = await publicApi.getBarbers();

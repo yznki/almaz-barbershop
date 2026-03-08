@@ -17,12 +17,16 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+  const { data: profileData, error: profileDataError } = await supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", data.user.id)
+    .maybeSingle();
 
-  if (profileError) {
+  if (profileDataError) {
     throw createError({
       statusCode: 400,
-      statusMessage: profileError.message,
+      statusMessage: profileDataError.message,
     });
   }
 
@@ -31,7 +35,8 @@ export default defineEventHandler(async (event) => {
     user: {
       id: data.user.id,
       email: data.user.email ?? null,
+      fullName: profileData?.full_name ?? (data.user.user_metadata.full_name as string | null | undefined) ?? null,
     },
-    role: profile?.role ?? null,
+    role: profileData?.role ?? null,
   };
 });

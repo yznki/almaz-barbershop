@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { LogOut, Settings, Shield } from "lucide-vue-next";
+import { LogOut, Settings } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { getRequestErrorMessage } from "../lib/formatters";
 
 const session = useAuthSession();
+const user = session.user;
 const route = useRoute();
 const router = useRouter();
 const authApi = useAuthApi();
@@ -11,8 +12,8 @@ const authApi = useAuthApi();
 const pending = ref(false);
 
 const initials = computed(() => {
-  const email = session.user.value?.email ?? "A";
-  return email.slice(0, 1).toUpperCase();
+  const label = user.value?.fullName ?? user.value?.email ?? "A";
+  return label.slice(0, 1).toUpperCase();
 });
 
 const handleLogout = async () => {
@@ -20,6 +21,7 @@ const handleLogout = async () => {
 
   try {
     await authApi.logout();
+    clearNuxtData("auth-me");
     await session.refreshSession();
     toast.success("Signed out");
     await router.push("/");
@@ -42,20 +44,13 @@ const handleLogout = async () => {
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-56 border-border/80 bg-popover/95 backdrop-blur">
       <DropdownMenuLabel class="space-y-1">
-        <p class="text-sm font-medium text-foreground">{{ session.user.value?.email }}</p>
-        <p class="text-xs uppercase tracking-[0.24em] text-muted-foreground">{{ session.role ?? "customer" }}</p>
+        <p class="text-sm font-medium text-foreground">{{ user?.fullName || user?.email }}</p>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuItem as-child>
         <NuxtLink to="/account" class="flex w-full items-center gap-2">
           <Settings class="size-4" />
           Account
-        </NuxtLink>
-      </DropdownMenuItem>
-      <DropdownMenuItem v-if="session.isAdmin" as-child>
-        <NuxtLink to="/admin" class="flex w-full items-center gap-2">
-          <Shield class="size-4" />
-          Admin
         </NuxtLink>
       </DropdownMenuItem>
       <DropdownMenuSeparator />

@@ -51,7 +51,36 @@ const saveEdit = async () => {
   <div class="space-y-6">
     <AppAdminHeader title="Appointments" description="Review and update booked appointments." />
 
-    <Card class="border-border/70 bg-card/55">
+    <div class="grid gap-4 md:hidden">
+      <Card v-for="appointment in appointments ?? []" :key="appointment.id" class="border-border/70 bg-card/55">
+        <CardContent class="space-y-4 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium text-foreground">{{ appointment.customer_name }}</p>
+              <p class="text-sm text-muted-foreground">{{ appointment.customer_phone }}</p>
+            </div>
+            <Badge variant="outline" class="capitalize">{{ appointment.status }}</Badge>
+          </div>
+          <div class="grid gap-3 rounded-2xl border border-border/70 bg-background/50 p-4 text-sm">
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-muted-foreground">Barber</span>
+              <span class="text-right text-foreground">{{ barberMap.get(appointment.barber_id) ?? appointment.barber_id }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-muted-foreground">Service</span>
+              <span class="text-right text-foreground">{{ serviceMap.get(appointment.service_id) ?? appointment.service_id }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-muted-foreground">Start</span>
+              <span class="text-right text-foreground">{{ formatDateTime(appointment.start_at) }}</span>
+            </div>
+          </div>
+          <Button variant="outline" class="w-full rounded-xl" @click="openEdit(appointment)">Manage</Button>
+        </CardContent>
+      </Card>
+    </div>
+
+    <Card class="hidden border-border/70 bg-card/55 md:block">
       <CardContent class="p-0">
         <Table>
           <TableHeader>

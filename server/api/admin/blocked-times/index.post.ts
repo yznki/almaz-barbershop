@@ -11,6 +11,13 @@ export default defineEventHandler(async (event) => {
   const supabase = createSupabaseServerClient(event);
   const body = await readBody<CreateBlockedTimeBody>(event);
 
+  if (new Date(body.startAt).getTime() >= new Date(body.endAt).getTime()) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "End time must be after start time",
+    });
+  }
+
   const { data, error } = await supabase
     .from("blocked_times")
     .insert({

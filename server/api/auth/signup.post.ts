@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
     user: {
       id: data.user.id,
       email: data.user.email ?? null,
+      fullName,
     },
     role,
     emailConfirmationRequired: !data.session,

@@ -36,7 +36,7 @@ const submit = async () => {
     const auth = await authApi.signup(result.data);
     await session.refreshSession();
     toast.success(auth.emailConfirmationRequired ? "Check your email to confirm your account" : "Account created");
-    await router.push(auth.emailConfirmationRequired ? "/login" : "/account");
+    await router.push(auth.emailConfirmationRequired ? "/login" : "/");
   } catch (error) {
     toast.error(getRequestErrorMessage(error));
   } finally {

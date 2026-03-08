@@ -5,6 +5,7 @@ type ProfileRole = Tables<"profiles">["role"] | null;
 type AuthUser = {
   id: string;
   email: string | null;
+  fullName: string | null;
 };
 
 type AuthResponse = {

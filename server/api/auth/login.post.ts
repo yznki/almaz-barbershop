@@ -1,3 +1,5 @@
+import { authLoginSchema } from "@/schemas/auth-login";
+
 export default defineEventHandler(async (event) => {
   const result = authLoginSchema.safeParse(await readBody(event));
 
@@ -18,7 +20,11 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", data.user.id)
+    .maybeSingle();
 
   if (profileError) {
     throw createError({
@@ -32,6 +38,7 @@ export default defineEventHandler(async (event) => {
     user: {
       id: data.user.id,
       email: data.user.email ?? null,
+      fullName: profile?.full_name ?? (data.user.user_metadata.full_name as string | null | undefined) ?? null,
     },
     role: profile?.role ?? null,
   };

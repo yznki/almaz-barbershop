@@ -2,7 +2,7 @@
 import { CalendarCheck2, Clock3, Scissors, UserRound } from "lucide-vue-next";
 import { z } from "zod";
 import { toast } from "vue-sonner";
-import type { Database } from "../types/database";
+import type { Database, Tables } from "../types/database";
 import { formatCurrency, formatLongDate, formatDateTime, getRequestErrorMessage } from "../lib/formatters";
 
 const bookingSchema = z.object({
@@ -17,20 +17,21 @@ const bookingSchema = z.object({
 
 type BookingForm = z.infer<typeof bookingSchema>;
 type AvailableSlot = Database["public"]["Functions"]["get_available_slots"]["Returns"][number];
-type PublicAppointment = Database["public"]["Functions"]["create_public_appointment"]["Returns"];
+type PublicAppointment = Tables<"appointments">;
 
 const route = useRoute();
 const publicApi = usePublicApi();
+const session = useAuthSession();
 
 const { data: barbers } = await publicApi.getBarbers();
-const { data: services } = await publicApi.getServices();
+const services = ref<Database["public"]["Tables"]["services"]["Row"][]>([]);
 
 const form = reactive<BookingForm>({
   barberId: typeof route.query.barber === "string" ? route.query.barber : "",
   serviceId: typeof route.query.service === "string" ? route.query.service : "",
   date: "",
   startAt: "",
-  customerName: "",
+  customerName: session.user.value?.fullName ?? "",
   customerPhone: "",
   notes: "",
 });
@@ -42,7 +43,25 @@ const slots = ref<AvailableSlot[]>([]);
 const slotsPending = ref(false);
 
 const selectedBarber = computed(() => (barbers.value ?? []).find((barber) => barber.id === form.barberId) ?? null);
-const selectedService = computed(() => (services.value ?? []).find((service) => service.id === form.serviceId) ?? null);
+const selectedService = computed(() => services.value.find((service) => service.id === form.serviceId) ?? null);
+
+watch(
+  () => form.barberId,
+  async (barberId, previousBarberId) => {
+    if (barberId !== previousBarberId) {
+      form.serviceId = "";
+      form.startAt = "";
+    }
+
+    if (!barberId) {
+      services.value = [];
+      return;
+    }
+
+    services.value = await publicApi.getServices({ barberId });
+  },
+  { immediate: true },
+);
 
 watch(
   () => [form.barberId, form.serviceId, form.date],
@@ -59,17 +78,11 @@ watch(
     slotsPending.value = true;
 
     try {
-      const response = await publicApi.getAvailableSlots({
+      slots.value = await publicApi.getAvailableSlots({
         barberId,
         serviceId,
         date,
       });
-
-      if (response.error.value) {
-        throw response.error.value;
-      }
-
-      slots.value = response.data.value ?? [];
     } catch (error) {
       slots.value = [];
       toast.error(getRequestErrorMessage(error));
@@ -167,7 +180,6 @@ const submitBooking = async () => {
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-foreground">Available slots</p>
-                  <p class="text-sm text-muted-foreground">Availability is based on the current backend schedule.</p>
                 </div>
                 <Spinner v-if="slotsPending" class="text-primary" />
               </div>
@@ -217,7 +229,9 @@ const submitBooking = async () => {
             </div>
 
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-sm leading-7 text-muted-foreground">Want easier management later? Create an account after booking, or log in now.</p>
+              <p class="text-sm leading-7 text-muted-foreground">
+                Want easier management later? Create an account after booking, or log in now.
+              </p>
               <Button class="rounded-full bg-primary px-6 text-primary-foreground" :disabled="submitting" @click="submitBooking">
                 {{ submitting ? "Booking..." : "Confirm booking" }}
               </Button>
@@ -316,7 +330,8 @@ const submitBooking = async () => {
           <CardContent class="space-y-3 p-5 text-sm leading-7 text-muted-foreground sm:p-6">
             <p class="font-medium text-foreground">Customer account note</p>
             <p>
-              The current backend supports authentication, but appointment ownership is not yet linked to customer accounts. Booking works today; full self-management can be enabled cleanly once the backend adds that relation.
+              The current backend supports authentication, but appointment ownership is not yet linked to customer accounts. Booking works
+              today; full self-management can be enabled cleanly once the backend adds that relation.
             </p>
           </CardContent>
         </Card>

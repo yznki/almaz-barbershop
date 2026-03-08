@@ -9,7 +9,6 @@ definePageMeta({
 });
 
 const loginSchema = authLoginSchema;
-const route = useRoute();
 const router = useRouter();
 const authApi = useAuthApi();
 const session = useAuthSession();
@@ -21,8 +20,6 @@ const form = reactive({
 
 const errors = ref<Record<string, string>>({});
 const pending = ref(false);
-
-const redirectTarget = computed(() => (typeof route.query.redirect === "string" ? route.query.redirect : null));
 
 const submit = async () => {
   const result = loginSchema.safeParse(form);
@@ -36,10 +33,10 @@ const submit = async () => {
   pending.value = true;
 
   try {
-    const auth = await authApi.login(result.data);
+    await authApi.login(result.data);
     await session.refreshSession();
     toast.success("Welcome back");
-    await router.push(redirectTarget.value ?? (auth.role === "admin" ? "/admin" : "/account"));
+    await router.push("/");
   } catch (error) {
     toast.error(getRequestErrorMessage(error));
   } finally {

@@ -1,14 +1,19 @@
 import type { Tables, Database } from "../types/database";
 
 type Barber = Tables<"barbers">;
+type Appointment = Tables<"appointments">;
 type Service = Tables<"services">;
 type AvailableSlot = Database["public"]["Functions"]["get_available_slots"]["Returns"][number];
-type PublicAppointment = Database["public"]["Functions"]["create_public_appointment"]["Returns"];
+type PublicAppointment = Appointment;
 
 type GetAvailableSlotsParams = {
   barberId: string;
   serviceId: string;
   date: string;
+};
+
+type GetServicesParams = {
+  barberId?: string;
 };
 
 type CreateAppointmentPayload = {
@@ -27,18 +32,12 @@ export const usePublicApi = () => {
     });
   };
 
-  const getServices = () => {
-    return useFetch<Service[]>("/api/public/services", {
-      key: "public-services",
-    });
+  const getServices = (params?: GetServicesParams) => {
+    return $fetch<Service[]>("/api/public/services", { query: params });
   };
 
   const getAvailableSlots = (params: GetAvailableSlotsParams) => {
-    return useFetch<AvailableSlot[]>("/api/public/slots", {
-      key: `public-slots:${params.barberId}:${params.serviceId}:${params.date}`,
-      query: params,
-      immediate: Boolean(params.barberId && params.serviceId && params.date),
-    });
+    return $fetch<AvailableSlot[]>("/api/public/slots", { query: params });
   };
 
   const createAppointment = (payload: CreateAppointmentPayload) => {

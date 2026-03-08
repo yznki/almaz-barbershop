@@ -12,6 +12,13 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id") ?? "";
   const body = await readBody<UpdateBlockedTimeBody>(event);
 
+  if (body.startAt && body.endAt && new Date(body.startAt).getTime() >= new Date(body.endAt).getTime()) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "End time must be after start time",
+    });
+  }
+
   const payload = {
     barber_id: body.barberId,
     start_at: body.startAt,
