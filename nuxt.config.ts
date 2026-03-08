@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
@@ -30,10 +31,11 @@ export default defineNuxtConfig({
     componentDir: "@/components/ui",
   },
   alias: {
-    "@": "/app",
-    "~": "/",
+    "@": fileURLToPath(new URL("./app", import.meta.url)),
+    "~": fileURLToPath(new URL("./", import.meta.url)),
   },
   colorMode: {
+    preference: "dark",
     classSuffix: "",
   },
 });

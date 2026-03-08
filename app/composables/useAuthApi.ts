@@ -18,9 +18,24 @@ type LoginPayload = {
   password: string;
 };
 
+type SignupPayload = {
+  fullName: string;
+  email: string;
+  password: string;
+};
+
+export type { AuthResponse, LoginPayload, SignupPayload };
+
 export const useAuthApi = () => {
   const login = (payload: LoginPayload) => {
     return $fetch<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body: payload,
+    });
+  };
+
+  const signup = (payload: SignupPayload) => {
+    return $fetch<AuthResponse & { emailConfirmationRequired?: boolean }>("/api/auth/signup", {
       method: "POST",
       body: payload,
     });
@@ -40,6 +55,7 @@ export const useAuthApi = () => {
 
   return {
     login,
+    signup,
     logout,
     getMe,
   };
